@@ -2,7 +2,9 @@
 #include <pthread.h>
 #include <stdlib.h>
 
-#define FILELOCATION "/home/furkan/Desktop/CMPE382/HW2/CMPE382-HW2-CriticalSectionSynchronization/myDir/file1.txt"
+//TODO: Read the file location and thread number from the command line arguments
+#define FILE_LOCATION "/home/furkan/Desktop/CMPE382/HW2/CMPE382-HW2-CriticalSectionSynchronization/myDir/file1.txt"
+#define SIMULTANEOUS_THREAD_COUNT 1
 
 // Function prototypes
 int isPrime(int number);
@@ -30,8 +32,7 @@ void* countPrimes(void* arg) {
     int count = 0;
     int readLineCount = 0;
 
-    //TODO: Read the file location from command line arguments
-    fp = fopen(FILELOCATION, "r");
+    fp = fopen(FILE_LOCATION, "r");
 
     if (fp == NULL) {
         perror("Error opening file");
