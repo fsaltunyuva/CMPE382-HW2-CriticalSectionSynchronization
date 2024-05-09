@@ -11,10 +11,9 @@ int isPrime(int number);
 void* countPrimes(void* arg);
 void generate_file_path(char *buffer, size_t buffer_size, const char *directory, int file_number);
 
-// Struct to pass arguments to the thread
+// Struct to pass arguments to the thread (In case there are additional arguments in future)
 typedef struct _thstruct {
     int file_number;
-    char* directory_arg;
 } THREAD_ARG;
 
 // Semaphores as global variables
@@ -109,7 +108,11 @@ void* countPrimes(void* arg) {
         readLineCount++;
     }
 
-    printf("Thread %d has found %d primes in file %s\n", thread_arg->file_number, count, file_path);
+    char file_name[80];
+
+    sprintf(file_name, "file%d.txt", thread_arg->file_number);
+
+    printf("Thread %d has found %d primes in %s\n", thread_arg->file_number, count, file_name);
 
     //printf("Thread %d has found %d primes in file %s\n", read_file_count - 1, count, file_path);
     //sem_post(&mutex);
