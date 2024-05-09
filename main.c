@@ -2,6 +2,7 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
+#include <semaphore.h>
 
 #define FILE_LOCATION "myDir/file1.txt"
 //#define DIRECTORY_LOCATION "myDir/"
@@ -12,8 +13,15 @@ int isPrime(int number);
 void* countPrimes(void* arg);
 void generate_file_path(char *buffer, size_t buffer_size, const char *directory, int file_number);
 
+typedef struct _thstruct {
+    int file_number;
+    char* directory_arg;
+} THREAD_ARG;
+
+sem_t simultaneous_thread_limit_sem;
+sem_t mutex;
+
 int main(int argc, char *argv[]) {
-    pthread_t thread1;
     int simultaneous_thread_count = atoi(argv[2]); // argv[2] is the number of threads
 
     printf("Simultaneous thread count: %d\n", simultaneous_thread_count);
@@ -38,16 +46,29 @@ int main(int argc, char *argv[]) {
     int file_count = current_file_number - 1; // Subtract 1 because the last file does not exist
 
     printf("There are %d files in the directory\n", file_count);
-    
-    //TODO: Distribute the work between threads
-    //TODO: Make simultaneous_thread_count of active threads limited to threadNumber
-    //TODO: Use semaphores (mutexes) to limit the simultaneous_thread_count of simultaneously active threads
-    //TODO: Create threads whenever an active thread is done
-    //TODO: Make the program generic to work with any simultaneous_thread_count of files
+
+    sem_init(&simultaneous_thread_limit_sem, 0, simultaneous_thread_count);
+    sem_init(&mutex, 0, 1);
+
+    pthread_t threads[file_count];
+    THREAD_ARG thread_args[file_count];
+
+    for(int i = 0; i < file_count; i++) { // Sending the file number to the thread as an argument
+        thread_args[i].file_number = i + 1;
+        thread_args[i].directory_arg = argv[1];
+    }
+
+    for(int i = 0; i < file_count; i++) {
+        pthread_create(&threads[i], NULL, countPrimes, &thread_args[i]);
+    }
+
+    //TODO: Create threads whenever an active thread is done ???
     //TODO: Observe time data
 
-    pthread_create(&thread1, NULL, countPrimes, NULL);
-    pthread_join(thread1, NULL);
+    for (int i = 0; i < file_count; i++) {
+        pthread_join(threads[i], NULL);
+    }
+
     return 0;
 }
 
@@ -58,13 +79,22 @@ void generate_file_path(char *buffer, size_t buffer_size, const char *directory,
 }
 
 void* countPrimes(void* arg) {
+    sem_wait(&simultaneous_thread_limit_sem); // Wait until the semaphore is available (# of threads that can enter the critical section is simultaneous_thread_count)
+
+    THREAD_ARG* thread_arg = (THREAD_ARG*)arg;
+
     FILE *fp = NULL;
     char* line = NULL;
     size_t len = 0;
     int count = 0;
     int readLineCount = 0;
 
-    fp = fopen(FILE_LOCATION, "r");
+    char file_path[256];
+    generate_file_path(file_path, sizeof(file_path), thread_arg->directory_arg, thread_arg->file_number);
+
+    printf("This thread is reading file %s\n", file_path);
+
+    fp = fopen(file_path, "r");
 
     if (fp == NULL) {
         perror("Error opening file");
@@ -78,13 +108,15 @@ void* countPrimes(void* arg) {
         readLineCount++;
     }
 
-    printf("Thread 1 has found %d prime numbers\n", count);
+    printf("This thread has found %d prime numbers\n", count);
 
     // Free resources and close the file
     if (line) {
         free(line);
     }
     fclose(fp);
+
+    sem_post(&simultaneous_thread_limit_sem);
 }
 
 int isPrime(int number)
