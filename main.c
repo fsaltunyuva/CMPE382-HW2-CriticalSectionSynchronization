@@ -4,8 +4,6 @@
 #include <string.h>
 #include <semaphore.h>
 
-#define FILE_LOCATION "myDir/file1.txt"
-//#define DIRECTORY_LOCATION "myDir/"
 #define FILE_NAME_TEMPLATE "file%d.txt"
 
 // Function prototypes
@@ -13,11 +11,13 @@ int isPrime(int number);
 void* countPrimes(void* arg);
 void generate_file_path(char *buffer, size_t buffer_size, const char *directory, int file_number);
 
+// Struct to pass arguments to the thread
 typedef struct _thstruct {
     int file_number;
     char* directory_arg;
 } THREAD_ARG;
 
+// Semaphores as global variables
 sem_t simultaneous_thread_limit_sem;
 sem_t mutex;
 
@@ -29,10 +29,10 @@ int main(int argc, char *argv[]) {
     // Counting how many files there are in the directory
     int current_file_number = 1;
     char file_path[256];  // Buffer to hold the file path
-
     FILE *file;
 
     do {
+        // argv[1] is the directory location (for example, "myDir/")
         generate_file_path(file_path, sizeof(file_path), argv[1], current_file_number); // Generate the file path
 
         file = fopen(file_path, "r");
@@ -46,9 +46,11 @@ int main(int argc, char *argv[]) {
     int file_count = current_file_number - 1; // Subtract 1 because the last file does not exist
 
     printf("There are %d files in the directory\n", file_count);
+    // End of counting files
 
-    sem_init(&simultaneous_thread_limit_sem, 0, simultaneous_thread_count);
-    sem_init(&mutex, 0, 1);
+
+    sem_init(&simultaneous_thread_limit_sem, 0, simultaneous_thread_count); // Initialize the semaphore with the number of threads
+    sem_init(&mutex, 0, 1); // Not used yet ???
 
     pthread_t threads[file_count];
     THREAD_ARG thread_args[file_count];
@@ -63,7 +65,7 @@ int main(int argc, char *argv[]) {
     }
 
     //TODO: Create threads whenever an active thread is done ???
-    //TODO: Observe time data
+    //TODO: Observe the time data from terminal
 
     for (int i = 0; i < file_count; i++) {
         pthread_join(threads[i], NULL);
@@ -79,9 +81,10 @@ void generate_file_path(char *buffer, size_t buffer_size, const char *directory,
 }
 
 void* countPrimes(void* arg) {
-    sem_wait(&simultaneous_thread_limit_sem); // Wait until the semaphore is available (# of threads that can enter the critical section is simultaneous_thread_count)
+    // Limiting the # of threads that can enter the critical section (countPrimes method in this case) is simultaneous_thread_count
+    sem_wait(&simultaneous_thread_limit_sem);
 
-    THREAD_ARG* thread_arg = (THREAD_ARG*)arg;
+    THREAD_ARG* thread_arg = (THREAD_ARG*)arg; // Storing the argument in a local variable
 
     FILE *fp = NULL;
     char* line = NULL;
@@ -108,7 +111,7 @@ void* countPrimes(void* arg) {
         readLineCount++;
     }
 
-    printf("This thread has found %d prime numbers\n", count);
+    printf("This thread has found %d prime numbers\n\n", count);
 
     // Free resources and close the file
     if (line) {
