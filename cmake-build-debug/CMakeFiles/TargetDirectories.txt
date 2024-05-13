@@ -1,3 +1,0 @@
-/home/furkan/Desktop/CMPE382/HW2/CMPE382-HW2-CriticalSectionSynchronization/cmake-build-debug/CMakeFiles/CMPE382_HW2_CriticalSectionSynchronization.dir
-/home/furkan/Desktop/CMPE382/HW2/CMPE382-HW2-CriticalSectionSynchronization/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/furkan/Desktop/CMPE382/HW2/CMPE382-HW2-CriticalSectionSynchronization/cmake-build-debug/CMakeFiles/rebuild_cache.dir
