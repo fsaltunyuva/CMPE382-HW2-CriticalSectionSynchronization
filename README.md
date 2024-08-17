@@ -73,10 +73,10 @@ the shell script to observe higher variations.
 ### Hints
 
 * Use a semaphore (mutex) to limit the number of simultaneously active threads
-(threadNumber). Create a threads whenever an active thread terminates. Your program must
+(threadNumber). Create a thread whenever an active thread terminates. Your program must
 work for any number of files.
 
-* You may heck number of active threads per process by executing “ps -eLf” command in
+* You may check number of active threads per process by executing “ps -eLf” command in
 a second terminal window under NLWP column, after your program starts execution.
 
 You may think of this problem as if an unknown number of students
